@@ -1,0 +1,43 @@
+#this is a service
+kind: Service
+apiVersion: v1
+metadata:
+  name: McService
+spec:
+  selector:
+    app: McApp
+  ports:
+  - protocol: TCP
+    port: 25565
+    targetPort: 25565
+  - protocol: TCP
+    port: 25575
+    targetPort: 25575
+
+---
+#below is a deployment
+apiVersion: apps/v1beta1 # for versions before 1.7.0 use apps/v1beta1
+kind: Deployment
+metadata:
+  name: McApp-deployment
+  labels:
+    app: McApp
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: McApp
+  template:
+    metadata:
+      labels:
+        app: Mcapp
+    spec:
+      containers:
+      - name: McApp
+        image: openhack/minecraft-server:1.0-alpine
+        ports:
+        - containerPort: 25565
+        - containerPort: 25575
+        env:
+        - name: EULA
+          value: "TRUE"

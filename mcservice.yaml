@@ -2,38 +2,40 @@
 kind: Service
 apiVersion: v1
 metadata:
-  name: McService
+  name: mcservice
 spec:
   selector:
-    app: McApp
+    app: mcapp
   ports:
-  - protocol: TCP
+  - name: minecraft
+    protocol: TCP
     port: 25565
     targetPort: 25565
-  - protocol: TCP
+  - name: recon
+    protocol: TCP
     port: 25575
     targetPort: 25575
-
+  type: LoadBalancer
 ---
 #below is a deployment
 apiVersion: apps/v1beta1 # for versions before 1.7.0 use apps/v1beta1
 kind: Deployment
 metadata:
-  name: McApp-deployment
+  name: mcappdeployment
   labels:
-    app: McApp
+    app: mcmapp
 spec:
-  replicas: 3
+  replicas: 1
   selector:
     matchLabels:
-      app: McApp
+      app: mcapp
   template:
     metadata:
       labels:
-        app: Mcapp
+        app: mcapp
     spec:
       containers:
-      - name: McApp
+      - name: mcapp
         image: openhack/minecraft-server:1.0-alpine
         ports:
         - containerPort: 25565
@@ -41,3 +43,24 @@ spec:
         env:
         - name: EULA
           value: "TRUE"
+        volumeMounts:
+        - name: mcvol01
+          mountPath: /data
+      volumes:
+      - name: mcvol01
+        azureFile:
+          secretName: azure-secret
+          shareName: mcstatetm21
+          readOnly: false
+        
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: azure-secret
+type: Opaque
+data:
+  azurestorageaccountkey: Y3orUFN6VmI0S2hYcjVkQlZHN2lrYUc2UG5ndjE1b2k3VzY4VzY5U0FQV05HUGFpczhrZW9wSThuYmQvWUgxTzBxWXBlYkY3ZlFBWlB4VWc3RHZaUEE9PQ== 
+  azurestorageaccountname: bWNzdG9yYWdlYWNjbnR0bTIx
+
+
